@@ -12,4 +12,10 @@ setup(
             'connector_expected_records=connector_expected_records.main:main',
         ],
     },
+    extras_require={
+      'test': [
+        'pytest',
+        'pytest-cov'
+      ]
+    }
 )
