@@ -5,7 +5,7 @@ from deepdiff import DeepDiff
 from helpers import get_stream_records
 from helpers import find_existing_record_by_pk
 
-def compare_records(config_path, catalog_path, stream, primary_key):
+def compare_records(config_path, catalog_path, stream, primary_key_type):
 
   expected_records_path = 'integration_tests/expected_records.jsonl'
 
@@ -28,22 +28,23 @@ def compare_records(config_path, catalog_path, stream, primary_key):
     sys.exit(1)
 
   diffs = []
+  exclude_paths = "emitted_at"
 
   for record in new_stream_records:
     record1 = record
-    record2 = find_existing_record_by_pk(existing_expected_records, primary_key, record['data'][primary_key])
+    record2 = find_existing_record_by_pk(existing_expected_records, primary_key_type, record['data'][primary_key_type])
 
     if record2 is None:
       continue
 
-    record_diff = DeepDiff(record1, record2, ignore_order=True)
+    record_diff = DeepDiff(record1, record2, ignore_order=True, exclude_paths=exclude_paths)
 
     if len(record_diff) == 0:
       continue
 
     diff = {
       'stream': stream,
-      primary_key: record['data'][primary_key],
+      primary_key_type: record['data'][primary_key_type],
       'diff': record_diff
     }
 

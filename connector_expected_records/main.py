@@ -1,8 +1,6 @@
 import sys
 import os
-import subprocess
 import argparse
-import json
 from check import check_connection
 from generate import generate_records
 from compare import compare_records
