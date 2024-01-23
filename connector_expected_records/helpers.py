@@ -1,6 +1,8 @@
 import subprocess
 import json
+import jsonlines
 import os
+from simple_term_menu import TerminalMenu
 
 def find_config():
   config_path = 'secrets/config.json'
@@ -45,8 +47,25 @@ def create_configured_catalog_for_stream(stream):
 
   return custom_catalog
 
-def find_existing_record_by_pk(records, primary_key, pk_value):
-  for record in records:
-    if record['data'][primary_key] == pk_value:
-      return record
-  return None
+def find_streams():
+  print('todo')
+
+
+def select_stream(streams):
+  print('todo')
+
+def replace_jsonl_record(expected_records_path, output_path, primary_key_type, primary_key, new_record):
+  with jsonlines.open(expected_records_path, 'r') as infile, jsonlines.open(output_path, 'w') as outfile:
+    for record in infile:
+      if record['data'][primary_key_type] == primary_key:
+        outfile.write(new_record)
+      else:
+        outfile.write(record)
+
+def replace_file(old_file_path, new_file_path):
+  if os.path.exists(old_file_path):
+    old_file_name = os.path.basename(old_file_path)
+    os.remove(old_file_path)
+    os.rename(new_file_path, os.path.join(os.path.dirname(new_file_path), old_file_name))
+  else:
+    print(f'{old_file_path} does not exist.')

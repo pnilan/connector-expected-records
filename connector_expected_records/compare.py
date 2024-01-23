@@ -1,43 +1,47 @@
 import json
 import sys
-import subprocess
 from deepdiff import DeepDiff
 from helpers import get_stream_records
-from helpers import find_existing_record_by_pk
 
 def compare_records(config_path, catalog_path, stream, primary_key_type):
+  '''
+  Compares records in stream to expected records. Currently only returns differences if a record with matching primary key exists in both streams.
+  TODO: Return primary_key and count of records that exist in expected records but not in stream.
+  '''
 
   expected_records_path = 'integration_tests/expected_records.jsonl'
 
-  existing_expected_records = []
+  expected_records = {}
 
   with open(expected_records_path, 'r') as f:
     for line in f:
       line = json.loads(line)
       if line['stream'] == stream:
-        existing_expected_records.append(line)
+        expected_records[line['data'][primary_key_type]] = line['data']
 
-  if len(existing_expected_records) == 0:
+  expected_records_count = len(expected_records)
+
+  if expected_records_count == 0:
     print(f'No existing records for {stream} stream. Run generate command to generate expected records.')
     sys.exit(1)
 
-  new_stream_records = get_stream_records(config_path, catalog_path)
+  stream_records = get_stream_records(config_path, catalog_path)
 
-  if len(new_stream_records) == 0:
+  if len(stream_records) == 0:
     print('No records in stream.')
     sys.exit(1)
 
   diffs = []
-  exclude_paths = "emitted_at"
 
-  for record in new_stream_records:
-    record1 = record
-    record2 = find_existing_record_by_pk(existing_expected_records, primary_key_type, record['data'][primary_key_type])
+  for record in stream_records:
+    record1 = record['data']
+    record2 = expected_records.get(record['data'][primary_key_type])
 
     if record2 is None:
       continue
 
-    record_diff = DeepDiff(record1, record2, ignore_order=True, exclude_paths=exclude_paths)
+    record_diff = DeepDiff(record1, record2, ignore_order=True)
+    del expected_records[record['data'][primary_key_type]]
 
     if len(record_diff) == 0:
       continue
@@ -50,13 +54,23 @@ def compare_records(config_path, catalog_path, stream, primary_key_type):
 
     diffs.append(diff)
 
-  if len(diffs) == 0:
+
+  missing_records_count = len(expected_records)
+  diff_count = len(diffs)
+
+  if diff_count == 0 and missing_records_count == 0:
     print('No differences found.')
     sys.exit(0)
-  else:
-    print(f'{len(diffs)} records have differences.')
-
+  elif diff_count == 0 and missing_records_count > 0:
+    print(f'{missing_records_count} records of are missing out of {expected_records_count} expected records.')
+    sys.exit(0)
+  elif diff_count > 0 and missing_records_count == 0:
+    print(f'{diff_count} records have differences.')
     for diff in diffs:
-      print(json.dumps(diff, indent=2))
+      print(diff)
+  else:
+    print(f'{diff_count} records have differences and {missing_records_count} records are missing out of {expected_records_count} expected records.')
+    for diff in diffs:
+      print(diff)
 
     sys.exit(0)

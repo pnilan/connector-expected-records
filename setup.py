@@ -5,7 +5,9 @@ setup(
     version='0.1.0',
     packages=find_packages(),
     install_requires=[
-      'deepdiff'
+      'deepdiff',
+      'simple_term_menu',
+      'jsonlines'
     ],
     entry_points={
         'console_scripts': [
@@ -16,6 +18,7 @@ setup(
       'test': [
         'pytest',
         'pytest-cov'
+        'unittets.mock'
       ]
     }
 )
