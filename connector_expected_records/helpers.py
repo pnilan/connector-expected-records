@@ -48,11 +48,27 @@ def create_configured_catalog_for_stream(stream):
   return custom_catalog
 
 def find_streams():
-  print('todo')
+  source_name = os.path.basename(os.getcwd()).replace('-', '_')
+  schema_path = os.path.join(os.getcwd(), source_name, 'schemas')
+  stream_names = []
+  if os.path.exists(schema_path):
+    for file in os.listdir(schema_path):
+      stream_names.append(file.split('.')[0])
+  else:
+    print('Schemas folder does not exist.')
 
+  if len(stream_names) == 0:
+    print('No available streams.')
+    return None
+  else:
+    stream_names.sort()
+    return stream_names
 
 def select_stream(streams):
-  print('todo')
+  terminal_menu = TerminalMenu(streams)
+  menu_entry_index = terminal_menu.show()
+  print(f'Selected {streams[menu_entry_index]}.')
+  return streams[menu_entry_index]
 
 def replace_jsonl_record(expected_records_path, output_path, primary_key_type, primary_key, new_record):
   with jsonlines.open(expected_records_path, 'r') as infile, jsonlines.open(output_path, 'w') as outfile:

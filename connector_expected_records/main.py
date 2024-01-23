@@ -2,11 +2,13 @@ import sys
 import os
 import argparse
 from check import check_connection
+from read import read_records
 from generate import generate_records
 from compare import compare_records
 from update import update_records
 from helpers import create_configured_catalog_for_stream
 from helpers import find_config
+from helpers import find_streams, select_stream
 
 def run(args):
 
@@ -16,6 +18,11 @@ def run(args):
 
   # Accepts check command
   subparsers.add_parser('check', parents=[parent_parser], help='checks that connection to API can be made.')
+
+  # Accepts read command
+  generate_parser = subparsers.add_parser('read', parents=[parent_parser], help='reads records for a given stream.')
+  required_generate_parser = generate_parser.add_argument_group('required named arguments')
+  required_generate_parser.add_argument('--stream', required=True, help='name of stream to read.')
 
   # Accepts generate command
   generate_parser = subparsers.add_parser('generate', parents=[parent_parser], help='generates expected records for given stream.')
@@ -34,6 +41,9 @@ def run(args):
   required_compare_parser.add_argument('--stream', required=True, help='name of stream to compare and update records.')
   required_compare_parser.add_argument('--pk', required=True, help='primary key of stream records.')
 
+  # Accepts list command
+  compare_parser = subparsers.add_parser('list', parents=[parent_parser], help='lists available streams')
+
   parsed_args = main_parser.parse_args(args)
   command = parsed_args.command
 
@@ -44,6 +54,18 @@ def run(args):
       sys.exit(1)
     else:
       check_connection(config_path)
+  elif command == 'read':
+    config_path = find_config()
+    catalog_path = create_configured_catalog_for_stream(parsed_args.stream)
+    if config_path is None:
+      print('Cannot find config file.')
+      sys.exit(1)
+    elif catalog_path is None:
+      print('Cannot find catalog file.')
+      sys.exit(1)
+    else:
+      read_records(config_path, catalog_path)
+      os.remove(catalog_path)
   elif command == 'generate':
     config_path = find_config()
     catalog_path = create_configured_catalog_for_stream(parsed_args.stream)
@@ -56,7 +78,6 @@ def run(args):
     else:
       generate_records(config_path, catalog_path)
       os.remove(catalog_path)
-
   elif command == 'compare':
     config_path = find_config()
     catalog_path = create_configured_catalog_for_stream(parsed_args.stream)
@@ -81,8 +102,12 @@ def run(args):
     else:
       update_records(config_path, catalog_path, parsed_args.stream, parsed_args.pk)
       os.remove(catalog_path)
+  elif command == 'list':
+    streams = find_streams()
+    for stream in streams:
+      print(stream)
   else:
-    print("Invalid command. Allowable commands: [check, generate, compare, update]")
+    print("Invalid command. Allowable commands: [check, read, generate, compare, update, list]")
     sys.exit(1)
 
   sys.exit(0)
