@@ -48,7 +48,6 @@ def update_records(config_path, catalog_path, stream, primary_key_type):
 
     while True:
       replace_record_input = input('Update old record with new one? (Y/n) > ')
-      print(f'{replace_record_input} & {type(replace_record_input)}')
       try:
         replace_record_input = replace_record_input.lower()
         if replace_record_input in ['y', 'n']:
