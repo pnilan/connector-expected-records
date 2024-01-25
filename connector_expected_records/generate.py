@@ -1,4 +1,5 @@
 import sys
+import os
 import json
 from helpers import get_stream_records
 
@@ -27,10 +28,13 @@ def generate_records(config_path, catalog_path):
     except ValueError:
       print('Please choose a valid quantity.')
 
-  with open(expected_records_path, 'rb') as f:
-    f.seek(-1, 2)
-    last_char = f.read(1)
-    has_newline = last_char == b'\n'
+  if os.path.exists(expected_records_path):
+    with open(expected_records_path, 'rb') as f:
+      f.seek(-1, 2)
+      last_char = f.read(1)
+      has_newline = last_char == b'\n'
+  else:
+    has_newline = True
 
   i = 0
   while i < records_to_add:
