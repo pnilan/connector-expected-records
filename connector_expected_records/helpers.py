@@ -53,7 +53,8 @@ def find_streams():
   stream_names = []
   if os.path.exists(schema_path):
     for file in os.listdir(schema_path):
-      stream_names.append(file.split('.')[0])
+      if file[-5:] == '.json':
+        stream_names.append(file.split('.')[0])
   else:
     print('Schemas folder does not exist.')
 
