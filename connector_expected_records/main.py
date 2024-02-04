@@ -6,7 +6,7 @@ from read import read_records
 from generate import generate_records
 from compare import compare_records
 from update import update_records
-from helpers import create_configured_catalog_for_stream, find_config, find_streams
+from helpers import create_configured_catalog_for_stream, find_config, find_streams, select_multiple_streams
 
 def run(args):
 
@@ -27,6 +27,7 @@ def run(args):
   generate_parser_flags = generate_parser.add_argument_group('flags')
   generate_parser_flags.add_argument('--stream', help='name of stream to generate expected records for.')
   generate_parser_flags.add_argument('-a', '--all', action='store_true', help='including "--all" flag will generate expected records for all found streams.')
+  generate_parser_flags.add_argument('--select', action='store_true', help='including "--select" flag will enable user selection of streams for which to generate records.')
 
   # Accepts compare command
   compare_parser = subparsers.add_parser('compare', parents=[parent_parser], help='compares expected records for given stream.')
@@ -68,8 +69,8 @@ def run(args):
   elif command == 'generate':
     config_path = find_config()
 
-    if not parsed_args.all or parsed_args.stream:
-      generate_parser.error('--stream argument is required unless --all is specified.')
+    # if not parsed_args.all or (parsed_args.stream or parsed_args.select):
+      # generate_parser.error('--stream argument is required unless --all or --select is specified.')
 
     if parsed_args.all:
       stream_catalogs = []
@@ -107,9 +108,25 @@ def run(args):
         if continue_to_next_iteration:
           continue
 
-        generate_records(config_path, stream_catalog[1], stream_catalog[0], parsed_args.all)
+        generate_records(config_path, stream_catalog[1], stream_catalog[0])
         os.remove(stream_catalog[1])
+    elif parsed_args.select:
+      streams = find_streams()
+      selected_streams = select_multiple_streams(streams)
 
+      stream_catalogs = []
+
+      for stream in selected_streams:
+        stream_catalog_path = create_configured_catalog_for_stream(stream)
+        if stream_catalog_path is None:
+          print('Cannot find catalog file.')
+          sys.exit(1)
+        else:
+          stream_catalogs.append([stream, stream_catalog_path])
+
+      for stream_catalog in stream_catalogs:
+        generate_records(config_path, stream_catalog[1], stream_catalog[0])
+        os.remove(stream_catalog[1])
     else:
       catalog_path = create_configured_catalog_for_stream(parsed_args.stream)
       if catalog_path is None:

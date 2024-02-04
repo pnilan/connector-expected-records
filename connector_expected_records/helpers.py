@@ -71,6 +71,17 @@ def select_stream(streams):
   print(f'Selected {streams[menu_entry_index]}.')
   return streams[menu_entry_index]
 
+def select_multiple_streams(streams):
+  terminal_menu = TerminalMenu(streams, multi_select=True, show_multi_select_hint=True)
+  menu_entry_indices = terminal_menu.show()
+
+  selected_streams = []
+  for i in menu_entry_indices:
+    selected_streams.append(streams[i])
+
+  return selected_streams
+
+
 def replace_jsonl_record(expected_records_path, output_path, primary_key_type, primary_key, new_record):
   with jsonlines.open(expected_records_path, 'r') as infile, jsonlines.open(output_path, 'w') as outfile:
     for record in infile:
