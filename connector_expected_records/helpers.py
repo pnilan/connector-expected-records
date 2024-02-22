@@ -81,7 +81,6 @@ def select_multiple_streams(streams):
 
   return selected_streams
 
-
 def replace_jsonl_record(expected_records_path, output_path, primary_key_type, primary_key, new_record):
   with jsonlines.open(expected_records_path, 'r') as infile, jsonlines.open(output_path, 'w') as outfile:
     for record in infile:

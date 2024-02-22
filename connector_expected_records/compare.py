@@ -34,10 +34,10 @@ def compare_records(config_path, catalog_path, stream, primary_key_type):
   diffs = []
 
   for record in stream_records:
-    record1 = record['data']
-    record2 = expected_records.get(record['data'][primary_key_type])
+    record1 = expected_records.get(record['data'][primary_key_type])
+    record2 = record['data']
 
-    if record2 is None:
+    if record1 is None:
       continue
 
     record_diff = DeepDiff(record1, record2, ignore_order=True)
@@ -60,10 +60,8 @@ def compare_records(config_path, catalog_path, stream, primary_key_type):
 
   if diff_count == 0 and missing_records_count == 0:
     print('No differences found.')
-    sys.exit(0)
   elif diff_count == 0 and missing_records_count > 0:
     print(f'{missing_records_count} records of are missing out of {expected_records_count} expected records.')
-    sys.exit(0)
   elif diff_count > 0 and missing_records_count == 0:
     print(f'{diff_count} records have differences.')
     for diff in diffs:
@@ -72,5 +70,3 @@ def compare_records(config_path, catalog_path, stream, primary_key_type):
     print(f'{diff_count} records have differences and {missing_records_count} records are missing out of {expected_records_count} expected records.')
     for diff in diffs:
       print(diff)
-
-    sys.exit(0)
