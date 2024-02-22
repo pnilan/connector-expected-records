@@ -25,3 +25,8 @@ cd connector-expected-records
 pip install -r requirements.txt
 ```
 4. Execute the desired command in the root of your source connector.
+
+## Limitations
+- Assumes source connector is setup correctly, currently provides no checks for directories/files.
+- Fails when attempting to use on streams which are not already within the primary configured catalog. So if --select flag is used but one selected stream is not in the catalog, the process will fail when it gets to the point of generating records for that stream.
+- The tool uses the deepdiff library for comparing records as a result cannot be run inside of a connector's virtual env.
