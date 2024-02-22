@@ -14,7 +14,7 @@ To run the project, you must execute it in the root of a source connector. You c
 ## Getting Started
 1. Clone this repository to your local machine:
 ```bash
-git clone https://github.com/your-username/connector-expected-records.git
+git clone https://github.com/pnilan/connector-expected-records.git
 ```
 2. Navigate to the repository directory:
 ```bash
